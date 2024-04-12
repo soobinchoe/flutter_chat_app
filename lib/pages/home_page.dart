@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/components/my_drawer.dart';
 import 'package:flutter_chat_app/components/user_tile.dart';

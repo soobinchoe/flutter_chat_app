@@ -55,7 +55,7 @@ class LoginPage extends StatelessWidget {
 
             //welcome back message
             Text(
-              "Welcome back, you've been missed!",
+              "Welcome!",
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontSize: 16,

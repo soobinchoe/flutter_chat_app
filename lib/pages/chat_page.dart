@@ -1,11 +1,10 @@
-import 'dart:js';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/components/chat_bubble.dart';
 import 'package:flutter_chat_app/components/my_textfield.dart';
 import 'package:flutter_chat_app/services/auth/auth_service.dart';
 import 'package:flutter_chat_app/services/chat/chat_service.dart';
+import 'package:intl/intl.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverEmail;
@@ -110,26 +109,61 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildMessageList() {
     String senderID = _authService.getCurrentUser()!.uid;
     return StreamBuilder(
-        stream: _chatService.getMessages(widget.receiverID, senderID),
-        builder: (context, snapshot) {
-          // errors
-          if (snapshot.hasError) {
-            return const Text("Error");
-          }
+      stream: _chatService.getMessages(widget.receiverID, senderID),
+      builder: (context, snapshot) {
+        // errors
+        if (snapshot.hasError) {
+          return const Text("Error");
+        }
 
-          // loading
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Text("Loading..");
-          }
+        // loading
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Text("Loading..");
+        }
 
-          // return list view
-          return ListView(
-            controller: _scrollController,
-            children: snapshot.data!.docs
-                .map((doc) => _buildMessageItem(doc))
-                .toList(),
-          );
+        // Group messages by date
+        Map<DateTime, List<DocumentSnapshot>> groupedMessages = {};
+        snapshot.data!.docs.forEach((doc) {
+          DateTime date = (doc['timestamp'] as Timestamp).toDate();
+          date = DateTime(date.year, date.month, date.day);
+          if (!groupedMessages.containsKey(date)) {
+            groupedMessages[date] = [];
+          }
+          groupedMessages[date]!.add(doc);
         });
+
+        // return list view
+        return ListView.builder(
+          controller: _scrollController,
+          itemCount: groupedMessages.length,
+          itemBuilder: (context, index) {
+            DateTime date = groupedMessages.keys.elementAt(index);
+            List<DocumentSnapshot> messages = groupedMessages[date]!;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    _formatDate(date),
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+                ...messages.map((doc) => _buildMessageItem(doc)).toList(),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    // Format date as needed, e.g., "January 1, 2022"
+    return DateFormat.yMMMMd().format(date);
   }
 
   // build message item
@@ -158,7 +192,7 @@ class _ChatPageState extends State<ChatPage> {
   // build message input
   Widget _builldUserInput() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 50.0),
+      padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
       child: Row(
         children: [
           // textfield should take up most of the space
@@ -173,11 +207,11 @@ class _ChatPageState extends State<ChatPage> {
 
           // send button
           Container(
-            decoration: const BoxDecoration(
-              color: Colors.purple,
+            decoration: BoxDecoration(
+              color: Colors.purple.shade200,
               shape: BoxShape.circle,
             ),
-            margin: const EdgeInsets.only(right: 25),
+            margin: const EdgeInsets.only(right: 10),
             child: IconButton(
               onPressed: sendMessage,
               icon: const Icon(

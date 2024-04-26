@@ -32,7 +32,8 @@ class AuthService {
   }
 
   // sign up
-  Future<UserCredential> signUpWithEmailPassword(String email, password) async {
+  Future<UserCredential> signUpWithEmailPassword(
+      String email, password, name) async {
     try {
       // create user
       UserCredential userCredential =
@@ -45,6 +46,7 @@ class AuthService {
       _fireStore.collection("Users").doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'email': email,
+        'displayName': name,
       });
 
       return userCredential;
@@ -57,5 +59,16 @@ class AuthService {
   Future<void> signOut() async {
     return await _auth.signOut();
   }
-  // errors
+
+  // Method to update user's name
+  Future<void> updateUserName(String newName) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(newName);
+      }
+    } catch (e) {
+      throw Exception('Error updating user name: $e');
+    }
+  }
 }

@@ -123,14 +123,14 @@ class _ChatPageState extends State<ChatPage> {
 
         // Group messages by date
         Map<DateTime, List<DocumentSnapshot>> groupedMessages = {};
-        snapshot.data!.docs.forEach((doc) {
+        for (var doc in snapshot.data!.docs) {
           DateTime date = (doc['timestamp'] as Timestamp).toDate();
           date = DateTime(date.year, date.month, date.day);
           if (!groupedMessages.containsKey(date)) {
             groupedMessages[date] = [];
           }
           groupedMessages[date]!.add(doc);
-        });
+        }
 
         // return list view
         return ListView.builder(
@@ -162,7 +162,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String _formatDate(DateTime date) {
-    // Format date as needed, e.g., "January 1, 2022"
     return DateFormat.yMMMMd().format(date);
   }
 

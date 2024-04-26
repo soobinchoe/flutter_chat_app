@@ -9,6 +9,7 @@ class RegisterPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pwController = TextEditingController();
   final TextEditingController _confirmPwController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
 
 // tap to go to login page
   final void Function()? onTap;
@@ -24,7 +25,7 @@ class RegisterPage extends StatelessWidget {
     if (_pwController.text == _confirmPwController.text) {
       try {
         _auth.signUpWithEmailPassword(
-            _emailController.text, _pwController.text);
+            _emailController.text, _pwController.text, _nameController.text);
       } catch (e) {
         showDialog(
           context: context,
@@ -82,6 +83,17 @@ class RegisterPage extends StatelessWidget {
               hintText: "Email",
               obscureText: false,
               controller: _emailController,
+            ),
+
+            const SizedBox(
+              height: 10,
+            ),
+
+            // name textfield
+            MyTextField(
+              hintText: "Name",
+              obscureText: false,
+              controller: _nameController,
             ),
 
             const SizedBox(

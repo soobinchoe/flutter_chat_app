@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class AuthService {
   // instance of auth
@@ -60,7 +62,28 @@ class AuthService {
     return await _auth.signOut();
   }
 
-  // Method to update user's name
+  // Upload profile photo to Firebase Storage
+  Future<String> uploadProfilePhoto(String uid, File imageFile) async {
+    try {
+      final storageRef = firebase_storage.FirebaseStorage.instance
+          .ref()
+          .child('profile_photos')
+          .child(uid)
+          .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      await storageRef.putFile(imageFile);
+
+      final downloadURL = await storageRef.getDownloadURL();
+      // Update user's profile with the download URL
+      await FirebaseAuth.instance.currentUser?.updatePhotoURL(downloadURL);
+
+      return downloadURL;
+    } catch (e) {
+      throw Exception('Error uploading profile photo: $e');
+    }
+  }
+
+  // Update user's name
   Future<void> updateUserName(String newName) async {
     try {
       User? user = _auth.currentUser;
